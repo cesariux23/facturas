@@ -1,1 +1,0 @@
-import{n as e,r as t,t as n}from"./index-D5Wm59vC.js";var r=(e,t)=>{let n=e.__vccOpts||e;for(let[e,r]of t)n[e]=r;return n},i={},a={class:`about`};function o(r,i){return t(),e(`div`,a,[...i[0]||=[n(`h1`,null,`This is an about page`,-1)]])}var s=r(i,[[`render`,o]]);export{s as default};
