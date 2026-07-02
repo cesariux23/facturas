@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import api from '@/services/api'
 const poliza_gasto = ref('');
 const poliza = ref('');
@@ -25,6 +25,10 @@ const status = computed(() => {
   return '';
 });
 
+watch(granTotal, () => {
+  poliza.value.status = status.value;
+});
+
 const uuid = ref('');
 
 const error = ref(null);
@@ -39,6 +43,9 @@ const searchPoliza = () => {
     .then(response => {
       if (response.data && response.data.length == 1) {
         poliza.value = response.data[0];
+        if (!poliza.value.status) {
+          poliza.value.status = status.value;
+        }
       } else {
         if (response.data && response.data.length > 1) {
           alert('Múltiples resultados encontrados. Por favor, refine su búsqueda.');
@@ -119,18 +126,9 @@ const numberFormat = (value) => {
           <strong>Total:</strong> {{ numberFormat(granTotal) }}
         </div>
         <div class="flex-1 flex flex-col gap-2 px-6">
-          <div class="text-yellow-700 rounded-md p-2" v-if="granTotal == 0">
-            <strong>Sin facturas asociadas.</strong>
-          </div>
-          <div class="text-red-700 rounded-md p-2" v-else-if="granTotal < poliza.Importe_gasto">
-            <strong>El total de facturas es menor al importe de la poliza.</strong>
-          </div>
-          <div class="text-blue-700 rounded-md p-2" v-else-if="granTotal > poliza.Importe_gasto">
-            <strong>El total de facturas excede el importe de la poliza.</strong>
-          </div>
-          <div class="text-green-700 rounded-md p-2" v-else-if="granTotal == poliza.Importe_gasto">
-            <strong>Total correcto.</strong>
-          </div>
+          <input type="text" :value="poliza.status"
+            class="border rounded-md p-2 border-gray-300 bg-gray-50 placeholder:text-gray-500"
+            placeholder="Status de la validación" />
         </div>
         <button class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:bg-gray-400"
           :disabled="!poliza.poliza_gasto" @click="savePoliza">
@@ -144,7 +142,7 @@ const numberFormat = (value) => {
         <form class="flex-1 flex gap-2" @submit.prevent="searchFactura">
           <input v-model="uuid" type="text" placeholder="UUID"
             class="flex-1 border rounded-md p-2 bg-white border-gray-300" />
-          <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:bg-gray-400"
+          <button class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:bg-gray-400 "
             type="submit" :disabled="uuid.trim() === ''">
             Buscar
           </button>
