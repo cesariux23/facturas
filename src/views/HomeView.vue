@@ -151,14 +151,16 @@ const numberFormat = (value) => {
           </button>
         </form>
         <div v-if="poliza.facturas && poliza.facturas.length > 0" class="py-4">
-          <table class="min-w-full border-collapse border border-gray-300 bg-white">
+          <table class="min-w-full border-collapse border border-gray-300 bg-white text-sm">
             <thead>
               <tr class="bg-gray-200">
                 <th>#</th>
                 <th>UUID</th>
                 <th>Importe</th>
                 <th>Fecha de emisión</th>
-                <th>Descripción</th>
+                <th>RFC emisor</th>
+                <th>RFC emisor</th>
+                <th>Concepto</th>
                 <th>Acciones</th>
               </tr>
             </thead>
@@ -170,6 +172,8 @@ const numberFormat = (value) => {
                   <input type="text" v-model="factura.Total" class="border rounded-md p-2 border-gray-300 bg-gray-50" />
                 </td>
                 <td class="p-2">{{ new Date(factura.Fecha).toLocaleDateString() }}</td>
+                <td class="p-2">{{ factura.RfcEmisor }}</td>
+                <td class="p-2">{{ factura.NombreEmisor }}</td>
                 <td class="p-2">{{ factura.Descripcion }}</td>
                 <td class="p-2">
                   <button @click="poliza.facturas.splice(idx, 1)"
