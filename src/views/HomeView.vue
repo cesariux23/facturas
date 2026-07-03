@@ -79,6 +79,8 @@ const searchPoliza = () => {
         if (!poliza.value.status) {
           poliza.value.status = status.value;
         }
+        status_txt.value = poliza.value.status;
+
         recibo.value = { ...reciboModel, poliza: poliza.value.poliza_gasto, Fecha: poliza.value.fecha_poliza_gasto, Total: poliza.value.Importe_gasto };
       } else {
         if (response.data && response.data.length > 1) {
@@ -230,7 +232,7 @@ const numberFormat = (value) => {
         <form class="flex-1 flex flex-col gap-2 mt-4" @submit.prevent>
           <h2 class="text-lg font-bold">Recibo simple</h2>
           <div class="flex gap-2">
-            <input v-model="recibo.NombreEmisor" type="text" placeholder="Nombre Proveedor"
+            <input v-model="recibo.NombreEmisor" type="text" placeholder="UUID o Nombre Proveedor"
               class="border rounded-md p-2 border-gray-300 bg-white" />
             <input v-model="recibo.Fecha" type="date" placeholder="Fecha"
               class="border rounded-md p-2 border-gray-300 bg-white" />
@@ -253,7 +255,7 @@ const numberFormat = (value) => {
                 <th>Importe</th>
                 <th>Fecha de emisión</th>
                 <th>RFC emisor</th>
-                <th>RFC emisor</th>
+                <th>Nombre emisor</th>
                 <th>Concepto</th>
                 <th>Acciones</th>
               </tr>
