@@ -62,6 +62,7 @@ const searchPoliza = () => {
   }
   api.get('/polizas/search/', { params: { poliza: poliza_gasto.value } })
     .then(response => {
+      error.value = null;
       if (response.data && response.data.length == 1) {
         poliza.value = response.data[0];
         if (!poliza.value.status) {
@@ -116,6 +117,7 @@ const savePoliza = () => {
   api.post('/validacion', polizaToSave)
     .then(() => {
       alert('Poliza guardada exitosamente.');
+      error.value = null;
     })
     .catch(_error => {
       error.value = _error.response.data.message.includes('Duplicate entry') ? 'Factura ya registrada' : _error.response.data.message;
@@ -194,7 +196,7 @@ const numberFormat = (value) => {
             <input v-model.number="recibo.Total" type="number" placeholder="Total"
               class="border rounded-md p-2 border-gray-300 bg-white" />
             <input v-model="recibo.Descripcion" type="text" placeholder="Concepto"
-              class="border rounded-md p-2 border-gray-300 bg-white" />
+              class="border rounded-md p-2 border-gray-300 bg-white flex-1" />
             <button @click.prevent="poliza.facturas.push({ ...recibo })"
               class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
               Agregar
