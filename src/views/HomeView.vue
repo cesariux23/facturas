@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue';
 import api from '@/services/api'
 const poliza_gasto = ref('');
 const poliza = ref('');
+const status_txt = ref('');
 const granTotal = computed(() => {
   if (poliza.value && poliza.value.facturas) {
     return poliza.value.facturas.reduce((total, factura) => total + factura.Total, 0);
@@ -26,7 +27,7 @@ const status = computed(() => {
 });
 
 watch(granTotal, () => {
-  poliza.value.status = status.value;
+  status_txt.value = status.value;
 });
 
 const uuid = ref('');
@@ -82,13 +83,15 @@ const searchFactura = () => {
 };
 
 const savePoliza = () => {
-  poliza.value.status = status.value;
+  poliza.value.status = status_txt.value;
   api.post('/validacion', poliza.value)
     .then(() => {
       alert('Poliza guardada exitosamente.');
     })
-    .catch(error => {
-      console.error('Error saving poliza:', error);
+    .catch(_error => {
+      error.value = _error.response.data.message.includes('Duplicate entry') ? 'Factura ya registrada' : _error.response.data.message;
+      console.log(_error);
+      console.error('Error saving poliza:', _error);
     });
 };
 
@@ -126,7 +129,7 @@ const numberFormat = (value) => {
           <strong>Total:</strong> {{ numberFormat(granTotal) }}
         </div>
         <div class="flex-1 flex flex-col gap-2 px-6">
-          <input type="text" :value="poliza.status"
+          <input type="text" v-model="status_txt"
             class="border rounded-md p-2 border-gray-300 bg-gray-50 placeholder:text-gray-500"
             placeholder="Status de la validación" />
         </div>
@@ -163,8 +166,10 @@ const numberFormat = (value) => {
               <tr v-for="(factura, idx) in poliza.facturas" :key="factura.id" class="border-t border-gray-300">
                 <td class="p-2">{{ idx + 1 }}</td>
                 <td class="p-2">{{ factura.UUID }}</td>
-                <td class="p-2">{{ numberFormat(factura.Total) }}</td>
-                <td class="p-2">{{ factura.Fecha_emision }}</td>
+                <td class="p-2">
+                  <input type="text" v-model="factura.Total" class="border rounded-md p-2 border-gray-300 bg-gray-50" />
+                </td>
+                <td class="p-2">{{ new Date(factura.Fecha).toLocaleDateString() }}</td>
                 <td class="p-2">{{ factura.Descripcion }}</td>
                 <td class="p-2">
                   <button @click="poliza.facturas.splice(idx, 1)"
@@ -179,6 +184,9 @@ const numberFormat = (value) => {
         <div v-else class="py-4">
           <p>No se encontraron facturas para esta poliza.</p>
         </div>
+      </div>
+      <div v-if="error" class="bg-red-100 text-red-700 p-4 rounded-md border border-red-400">
+        <p><strong>Error:</strong> {{ error }}</p>
       </div>
     </div>
   </main>
