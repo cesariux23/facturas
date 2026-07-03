@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api', // Replace with your actual API URL
+  baseURL: 'http://api_valida.ivea.local/api', // Replace with your actual API URL
   headers: {
     'Content-Type': 'application/json',
   },
