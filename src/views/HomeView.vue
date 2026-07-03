@@ -2,11 +2,31 @@
 import { computed, ref, watch } from 'vue';
 import api from '@/services/api'
 const poliza_gasto = ref('');
-const poliza = ref('');
+const reciboModel = {
+  poliza: '',
+  //RfcEmisor: '',
+  NombreEmisor: '',
+  Fecha: '',
+  Total: 0,
+  Descripcion: '',
+  UUID: 'RECIBO SIMPLE',
+  Tipo: 'Recibo',
+};
+
+const recibo = ref({ ...reciboModel });
+
+const poliza = ref({ Importe_gasto: 0, facturas: [] });
 const status_txt = ref('');
 const granTotal = computed(() => {
-  if (poliza.value && poliza.value.facturas) {
-    return poliza.value.facturas.reduce((total, factura) => total + factura.Total, 0);
+  if (poliza.value && poliza.value.facturas.length > 0) {
+    return poliza.value.facturas.reduce((total, factura) => total + Number.parseFloat(factura.Total), 0);
+  }
+  return 0;
+});
+
+const diferencia = computed(() => {
+  if (poliza.value) {
+    return poliza.value.Importe_gasto - granTotal.value;
   }
   return 0;
 });
@@ -47,6 +67,7 @@ const searchPoliza = () => {
         if (!poliza.value.status) {
           poliza.value.status = status.value;
         }
+        recibo.value = { ...reciboModel, poliza: poliza.value.poliza_gasto, Fecha: poliza.value.fecha_poliza_gasto, Total: poliza.value.Importe_gasto };
       } else {
         if (response.data && response.data.length > 1) {
           alert('Múltiples resultados encontrados. Por favor, refine su búsqueda.');
@@ -66,8 +87,13 @@ const searchFactura = () => {
   api.get('/facturas/search/', { params: { UUID: uuid.value } })
     .then(response => {
       if (response.data && response.data.length == 1) {
-        poliza.value.facturas.push(response.data[0]);
+        const factura = response.data[0];
+        factura.Total = parseFloat(factura.Total); // Ensure Total is a number
+        factura.Fecha = new Date(factura.Fecha);
+        factura.Tipo = 'Factura';
+        poliza.value.facturas.push(factura);
         uuid.value = '';
+        recibo.value.Total = diferencia.value > 0 ? diferencia.value : 0;
       } else {
         if (response.data && response.data.length > 1) {
           alert('Múltiples resultados encontrados. Por favor, refine su búsqueda.');
@@ -84,7 +110,10 @@ const searchFactura = () => {
 
 const savePoliza = () => {
   poliza.value.status = status_txt.value;
-  api.post('/validacion', poliza.value)
+  const polizaToSave = {
+    ...poliza.value,
+  };
+  api.post('/validacion', polizaToSave)
     .then(() => {
       alert('Poliza guardada exitosamente.');
     })
@@ -117,6 +146,7 @@ const numberFormat = (value) => {
         </h2>
         <div v-if="poliza" class="py-4 border-t-2 border-gray-400">
           <p><strong>Número de poliza:</strong> {{ poliza.poliza_gasto }}</p>
+          <p><strong>Fecha poliza:</strong> {{ poliza.fecha_poliza_gasto }}</p>
           <p><strong>Importe:</strong> {{ numberFormat(poliza.Importe_gasto) }}</p>
           <p><strong>Descripción del gasto:</strong> {{ poliza.descripcion_gasto }}</p>
           <p class="text-sm bg-green-100 mt-5 p-2 rounded" v-if="poliza.status"><strong>Ultimo status:</strong> {{
@@ -124,9 +154,12 @@ const numberFormat = (value) => {
           <p v-else class=" text-sm bg-yellow-100 mt-5 p-2 rounded">No se ha validado</p>
         </div>
       </div>
-      <div class="flex gap-2">
-        <div class="w-  1/3 text-lg font-bold self-center">
-          <strong>Total:</strong> {{ numberFormat(granTotal) }}
+      <div class="flex gap-6">
+        <div class="text-lg font-bold self-center">
+          <strong>Total soporte:</strong> {{ numberFormat(granTotal) }}
+        </div>
+        <div class="text-lg font-bold self-center">
+          <strong>Diferencia:</strong> {{ numberFormat(diferencia) }}
         </div>
         <div class="flex-1 flex flex-col gap-2 px-6">
           <input type="text" v-model="status_txt"
@@ -149,6 +182,24 @@ const numberFormat = (value) => {
             type="submit" :disabled="uuid.trim() === ''">
             Buscar
           </button>
+        </form>
+
+        <form class="flex-1 flex flex-col gap-2 mt-4" @submit.prevent>
+          <h2 class="text-lg font-bold">Recibo simple</h2>
+          <div class="flex gap-2">
+            <input v-model="recibo.NombreEmisor" type="text" placeholder="Nombre Proveedor"
+              class="border rounded-md p-2 border-gray-300 bg-white" />
+            <input v-model="recibo.Fecha" type="date" placeholder="Fecha"
+              class="border rounded-md p-2 border-gray-300 bg-white" />
+            <input v-model.number="recibo.Total" type="number" placeholder="Total"
+              class="border rounded-md p-2 border-gray-300 bg-white" />
+            <input v-model="recibo.Descripcion" type="text" placeholder="Concepto"
+              class="border rounded-md p-2 border-gray-300 bg-white" />
+            <button @click.prevent="poliza.facturas.push({ ...recibo })"
+              class="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600">
+              Agregar
+            </button>
+          </div>
         </form>
         <div v-if="poliza.facturas && poliza.facturas.length > 0" class="py-4">
           <table class="min-w-full border-collapse border border-gray-300 bg-white text-sm">
