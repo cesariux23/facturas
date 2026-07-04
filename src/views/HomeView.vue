@@ -267,7 +267,7 @@ const numberFormat = (value) => {
                 <td class="p-2">
                   <input type="text" v-model="factura.Total" class="border rounded-md p-2 border-gray-300 bg-gray-50" />
                 </td>
-                <td class="p-2">{{ new Date(factura.Fecha).toLocaleDateString() }}</td>
+                <td class="p-2">{{ factura.Fecha }}</td>
                 <td class="p-2">{{ factura.RfcEmisor }}</td>
                 <td class="p-2">{{ factura.NombreEmisor }}</td>
                 <td class="p-2">{{ factura.Descripcion }}</td>
